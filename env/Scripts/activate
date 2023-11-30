@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\Asani\Documents\GitHub\23001042-15-acia-challenge-gold\env"
+VIRTUAL_ENV="C:\Users\Asani\Documents\GitHub\23001042-15-aci-challenge-gold\env"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
