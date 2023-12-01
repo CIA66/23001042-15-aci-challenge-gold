@@ -50,6 +50,30 @@ conn = sqlite3.connect('data/gold_challenge.db', check_same_thread=False)
 # buat kolom text dan text_clean dengan tipe data varchar
 conn.execute('''CREATE TABLE IF NOT EXISTS data (text varchar(255), text_clean varchar(255));''')
 
+
+alay_dict = pd.read_csv('data/new_kamusalay.csv', names = ['original', 'replacement'], encoding='latin-1')
+alay_dict_map = dict(zip(alay_dict['original'], alay_dict['replacement']))
+def normalize_alay(text):
+    return ' '.join([alay_dict_map[word] if word in alay_dict_map else word for word in text.split(' ')])
+
+# remove abusive words from text
+abusive_dict = pd.read_csv('data/abusive.csv', names = ['original', 'replacement'], encoding='latin-1')
+abusive_dict_map = dict(zip(abusive_dict['original'], abusive_dict['replacement']))
+def remove_abusive(text):
+    return ' '.join([abusive_dict_map[word] if word in abusive_dict_map else word for word in text.split(' ')])
+
+
+df=pd.read_csv('data/abusive.csv')
+
+bannedWord = df["ABUSIVE"].values.tolist()
+
+def RemoveBannedWords(toPrint,database):
+    statement = toPrint
+    database_1 = sorted(list(database), key=len)
+    pattern = re.compile(r"\b(" + "|".join(database_1) + ")\\W", re.I)
+    return pattern.sub("", toPrint + ' ')[:-1] #added because it skipped last word
+
+
 # membuat endpoint pertama text-processing
 @swag_from("docs/text_processing.yml", methods=['POST'])
 @app.route('/text-processing', methods=['POST'])
@@ -59,7 +83,9 @@ def text_processing():
     text = request.form.get('text')
     
     # proses cleansing menggunakan regex
-    text_clean = re.sub(r'[^a-zA-Z0-9]', ' ', text)
+    # text_clean = re.sub(r'[^a-zA-Z0-9]', ' ', text)
+    text_clean = normalize_alay(text)
+    text_clean = RemoveBannedWords(text_clean,bannedWord)
 
     # input hasil cleansing ke database
     conn.execute("INSERT INTO data (text, text_clean) VALUES (?, ?)", (text, text_clean))
@@ -94,7 +120,9 @@ def text_processing_file():
     for original_text in texts:
 
         # proses cleansing data
-        text_clean = re.sub(r'[^a-zA-Z0-9]', ' ', original_text) # ditambahin cleansing ini.
+        # text_clean = re.sub(r'[^a-zA-Z0-9]', ' ', original_text) # ditambahin cleansing ini.
+        text_clean = normalize_alay(original_text)
+        text_clean = RemoveBannedWords(text_clean,bannedWord)
 
         # input hasil cleansing ke database
         conn.execute("INSERT INTO data (text, text_clean) VALUES (?, ?)", (original_text, text_clean))
