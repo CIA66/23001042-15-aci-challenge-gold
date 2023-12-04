@@ -51,6 +51,19 @@ conn = sqlite3.connect('data/gold_challenge.db', check_same_thread=False)
 conn.execute('''CREATE TABLE IF NOT EXISTS data (text varchar(255), text_clean varchar(255));''')
 
 
+@app.route('/', methods=['GET'])
+def text():
+    json_response = {
+        'status_code': 200,
+        'description': "127.0.0.1:5000/docs",
+        'data': "Gold Challenge DSC 15 Amadea Claire I.A. - Menormalisasi Kata Alay dan Menghilangkan Kata Abusive", 
+    }
+
+    response_data = jsonify(json_response)
+
+    return response_data
+
+
 alay_dict = pd.read_csv('data/new_kamusalay.csv', names = ['original', 'replacement'], encoding='latin-1')
 alay_dict_map = dict(zip(alay_dict['original'], alay_dict['replacement']))
 def normalize_alay(text):
